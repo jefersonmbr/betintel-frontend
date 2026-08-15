@@ -10,13 +10,8 @@ import {
 } from '@mui/material'
 import { useEffect, useReducer } from 'react'
 import { gamesMock } from '@/mocks/games'
-
-type Alert = {
-  gameId: number,
-  createdAt: string,
-  targetOdd: string,
-  status: string,
-}
+import { bookmakersMock } from '@/mocks/bookmakers'
+import { Alert } from '@/types/alert'
 
 function reducer(_: Alert[], action: Alert[]) {
   return action
@@ -49,11 +44,23 @@ export default function AlertasPage() {
     const savedAlerts: Alert[] = JSON.parse(
       localStorage.getItem('alerts') || '[]'
     )
-    const updatedAlerts = savedAlerts.map(alert =>
-      alert.createdAt === createdAt
-        ? { ...alert, status: 'disparado' }
-        : alert
-    )
+    const updatedAlerts = savedAlerts.map((alert) => {
+      if (alert.createdAt !== createdAt) {
+        return alert
+      }
+      const game = gamesMock.find((item) => item.id === alert.gameId)
+      const bestOdd = game
+        ? game.odds
+          .filter((odd) => odd.market === alert.market && odd.selection === alert.selection)
+          .reduce((best, current) => (!best || current.value > best.value ? current : best), game.odds[0])
+        : null
+      return {
+        ...alert,
+        status: 'disparado' as const,
+        triggeredAt: new Date().toISOString(),
+        triggeredBookmakerId: bestOdd?.bookmakerId,
+      }
+    })
     localStorage.setItem(
       'alerts',
       JSON.stringify(updatedAlerts)
@@ -87,6 +94,11 @@ export default function AlertasPage() {
                 <Typography>
                   Status: {alert.status}
                 </Typography>
+                {alert.status === 'disparado' && alert.triggeredBookmakerId && (
+                  <Typography>
+                    Disparado em: {bookmakersMock.find(item => item.id === alert.triggeredBookmakerId)?.name}
+                  </Typography>
+                )}
                 <Typography>
                   Criado em:{' '}{new Date(alert.createdAt).toLocaleString('pt-BR')}
                 </Typography>

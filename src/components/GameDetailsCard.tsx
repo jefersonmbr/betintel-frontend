@@ -7,9 +7,13 @@ import {
   Button,
   Stack,
   Snackbar,
+  Divider,
 } from '@mui/material'
 import { useState, useSyncExternalStore } from 'react'
 import { Game } from '@/types/game'
+import { Alert } from '@/types/alert'
+import { bookmakersMock } from '@/mocks/bookmakers'
+import { getBestOdd } from '@/lib/odds'
 
 type Props = {
   game: Game,
@@ -40,12 +44,23 @@ export default function GameDetailsCard({ game }: Props) {
     getServerSnapshot
   )
 
+  const bestOdd = getBestOdd(game)
+  const oddsByBookmaker = game.odds
+    .filter((odd) => odd.market === 'MATCH_RESULT' && odd.selection === 'HOME')
+    .map((odd) => ({
+      odd,
+      bookmaker: bookmakersMock.find((item) => item.id === odd.bookmakerId),
+    }))
+    .sort((a, b) => b.odd.value - a.odd.value)
+
   const handleCreateAlert = () => {
-    const savedAlerts = JSON.parse(
+    const savedAlerts: Alert[] = JSON.parse(
       localStorage.getItem('alerts') || '[]'
     )
-    const newAlert = {
+    const newAlert: Alert = {
       gameId: game.id,
+      market: 'MATCH_RESULT',
+      selection: 'HOME',
       targetOdd: 2.0,
       status: 'ativo',
       createdAt: new Date().toISOString(),
@@ -69,12 +84,46 @@ export default function GameDetailsCard({ game }: Props) {
           <Typography sx={{ mb: 1 }}>
             Liga: {game.league}
           </Typography>
-          <Typography sx={{ mb: 1 }}>
-            Horário: {game.time}
-          </Typography>
           <Typography sx={{ mb: 3 }}>
-            Melhor odd: {game.odd}
+            Horário: {new Date(game.startTime).toLocaleString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </Typography>
+
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Odds por casa (Resultado Final — Casa)
+          </Typography>
+          <Stack spacing={1} sx={{ mb: 3 }}>
+            {oddsByBookmaker.map(({ odd, bookmaker }) => (
+              <Stack
+                key={odd.bookmakerId}
+                direction="row"
+                sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <Typography
+                  sx={{ fontWeight: odd.value === bestOdd?.value ? 700 : 400 }}
+                >
+                  {bookmaker?.name ?? odd.bookmakerId}: {odd.value}
+                </Typography>
+                <Button
+                  size="small"
+                  variant={odd.value === bestOdd?.value ? 'contained' : 'outlined'}
+                  component="a"
+                  href={bookmaker?.affiliateUrl ?? '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Apostar
+                </Button>
+              </Stack>
+            ))}
+          </Stack>
+
+          <Divider sx={{ mb: 3 }} />
+
           <Typography variant="h6" sx={{ mb: 2 }}>
             Análise IA
           </Typography>
@@ -91,15 +140,12 @@ export default function GameDetailsCard({ game }: Props) {
             Alertas salvos: {alertsCount}
           </Typography>
           <Stack spacing={2}>
-            <Button variant="contained" fullWidth>
-              Apostar agora
-            </Button>
             <Button
               variant="outlined"
               fullWidth
               onClick={handleCreateAlert}
             >
-              Criar alerta
+              Criar alerta (odd alvo: 2.0)
             </Button>
           </Stack>
         </CardContent>

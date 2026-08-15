@@ -13,14 +13,7 @@ export default function Home() {
         </Typography>
 
         {gamesMock.map((game) => (
-          <GameCard
-            key={game.id}
-            id={game.id}
-            homeTeam={game.homeTeam}
-            awayTeam={game.awayTeam}
-            time={game.time}
-            odd={game.odd}
-          />
+          <GameCard key={game.id} game={game} />
         ))}
       </Box>
     </Container>
