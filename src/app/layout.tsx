@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import BottomNav from '@/components/BottomNav'
+import ThemeRegistry from '@/components/ThemeRegistry'
 
 export const metadata: Metadata = {
   title: 'BetIntel AI',
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        {children}
-        <BottomNav />
+        <ThemeRegistry>
+          {children}
+          <BottomNav />
+        </ThemeRegistry>
       </body>
     </html>
   );
