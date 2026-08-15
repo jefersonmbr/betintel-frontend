@@ -7,7 +7,7 @@ import { gamesMock } from '../mocks/games'
 export default function Home() {
   return (
     <Container maxWidth="md">
-      <Box mt={4}>
+      <Box sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>
           Jogos de Hoje
         </Typography>
