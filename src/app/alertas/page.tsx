@@ -8,9 +8,12 @@ import {
   Alert as MuiAlert,
   Tabs,
   Tab,
+  Button,
 } from '@mui/material'
 import { useState } from 'react'
+import Link from 'next/link'
 import { useAlerts } from '@/hooks/useAlerts'
+import { useAuth } from '@/contexts/AuthContext'
 import { AlertStatus } from '@/types/alert'
 import AlertCard from '@/components/AlertCard'
 
@@ -24,12 +27,37 @@ const filters: { value: FilterValue, label: string }[] = [
 ]
 
 export default function AlertasPage() {
-  const { data: alerts, isLoading, isError } = useAlerts()
+  const { user, isLoading: isAuthLoading } = useAuth()
+  const { data: alerts, isLoading, isError } = useAlerts(Boolean(user))
   const [filter, setFilter] = useState<FilterValue>('todos')
 
   const filteredAlerts = alerts?.filter(
     (alert) => filter === 'todos' || alert.status === filter
   )
+
+  if (isAuthLoading) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4, mb: 10, textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    )
+  }
+
+  if (!user) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
+        <Typography variant="h5" gutterBottom>
+          Meus Alertas
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          Entre com sua conta pra ver e criar alertas.
+        </Typography>
+        <Button variant="contained" component={Link} href="/login">
+          Entrar
+        </Button>
+      </Container>
+    )
+  }
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>

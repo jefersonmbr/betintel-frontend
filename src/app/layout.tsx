@@ -3,6 +3,7 @@ import BottomNav from '@/components/BottomNav'
 import LegalFooter from '@/components/LegalFooter'
 import ThemeRegistry from '@/components/ThemeRegistry'
 import QueryProvider from '@/components/QueryProvider'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 export const metadata: Metadata = {
   title: 'BetIntel AI',
@@ -19,11 +20,13 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body>
         <QueryProvider>
-          <ThemeRegistry>
-            {children}
-            <LegalFooter />
-            <BottomNav />
-          </ThemeRegistry>
+          <AuthProvider>
+            <ThemeRegistry>
+              {children}
+              <LegalFooter />
+              <BottomNav />
+            </ThemeRegistry>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

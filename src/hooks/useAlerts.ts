@@ -2,13 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 import { Alert, CreateAlertInput } from '@/types/alert'
 
-export function useAlerts() {
+export function useAlerts(enabled: boolean = true) {
   return useQuery({
     queryKey: ['alerts'],
     queryFn: async () => {
       const { data } = await api.get<Alert[]>('/alerts')
       return data
     },
+    enabled,
   })
 }
 

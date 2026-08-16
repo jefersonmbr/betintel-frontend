@@ -12,10 +12,12 @@ import {
   TextField,
 } from '@mui/material'
 import { useState } from 'react'
+import Link from 'next/link'
 import { Game } from '@/types/game'
 import { getBestOdd } from '@/lib/odds'
 import { apiBaseUrl } from '@/lib/api'
 import { useAlerts, useCreateAlert } from '@/hooks/useAlerts'
+import { useAuth } from '@/contexts/AuthContext'
 
 type Props = {
   game: Game,
@@ -23,7 +25,8 @@ type Props = {
 
 export default function GameDetailsCard({ game }: Props) {
   const [open, setOpen] = useState(false)
-  const { data: alerts } = useAlerts()
+  const { user } = useAuth()
+  const { data: alerts } = useAlerts(Boolean(user))
   const createAlert = useCreateAlert()
 
   const bestOdd = getBestOdd(game)
@@ -110,28 +113,36 @@ export default function GameDetailsCard({ game }: Props) {
           <Typography sx={{ mb: 3 }}>
             Confiança: Alta
           </Typography>
-          <Typography sx={{ mb: 3 }}>
-            Alertas salvos pra esse jogo: {alertsForThisGame}
-          </Typography>
-          <Stack direction="row" spacing={2}>
-            <TextField
-              label="Odd alvo"
-              type="number"
-              size="small"
-              value={targetOdd}
-              onChange={(event) => setTargetOdd(event.target.value)}
-              slotProps={{ htmlInput: { step: 0.01, min: 1 } }}
-              sx={{ width: 120 }}
-            />
-            <Button
-              variant="outlined"
-              fullWidth
-              onClick={handleCreateAlert}
-              disabled={createAlert.isPending || !targetOdd}
-            >
-              {createAlert.isPending ? <CircularProgress size={20} /> : 'Criar alerta'}
+          {user ? (
+            <>
+              <Typography sx={{ mb: 3 }}>
+                Alertas salvos pra esse jogo: {alertsForThisGame}
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                <TextField
+                  label="Odd alvo"
+                  type="number"
+                  size="small"
+                  value={targetOdd}
+                  onChange={(event) => setTargetOdd(event.target.value)}
+                  slotProps={{ htmlInput: { step: 0.01, min: 1 } }}
+                  sx={{ width: 120 }}
+                />
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={handleCreateAlert}
+                  disabled={createAlert.isPending || !targetOdd}
+                >
+                  {createAlert.isPending ? <CircularProgress size={20} /> : 'Criar alerta'}
+                </Button>
+              </Stack>
+            </>
+          ) : (
+            <Button variant="outlined" fullWidth component={Link} href="/login">
+              Entrar pra criar alerta
             </Button>
-          </Stack>
+          )}
         </CardContent>
       </Card>
       <Snackbar
