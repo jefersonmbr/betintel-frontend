@@ -3,25 +3,50 @@
 import {
   Container,
   Typography,
-  Card,
-  CardContent,
   Stack,
-  Button,
   CircularProgress,
   Alert as MuiAlert,
+  Tabs,
+  Tab,
 } from '@mui/material'
-import { useAlerts, useDeleteAlert, useTriggerAlert } from '@/hooks/useAlerts'
+import { useState } from 'react'
+import { useAlerts } from '@/hooks/useAlerts'
+import { AlertStatus } from '@/types/alert'
+import AlertCard from '@/components/AlertCard'
+
+type FilterValue = AlertStatus | 'todos'
+
+const filters: { value: FilterValue, label: string }[] = [
+  { value: 'todos', label: 'Todos' },
+  { value: 'ativo', label: 'Ativos' },
+  { value: 'disparado', label: 'Disparados' },
+  { value: 'cancelado', label: 'Cancelados' },
+]
 
 export default function AlertasPage() {
   const { data: alerts, isLoading, isError } = useAlerts()
-  const deleteAlert = useDeleteAlert()
-  const triggerAlert = useTriggerAlert()
+  const [filter, setFilter] = useState<FilterValue>('todos')
+
+  const filteredAlerts = alerts?.filter(
+    (alert) => filter === 'todos' || alert.status === filter
+  )
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4, mb: 10 }}>
       <Typography variant="h5" gutterBottom>
         Meus Alertas
       </Typography>
+
+      <Tabs
+        value={filter}
+        onChange={(_, value: FilterValue) => setFilter(value)}
+        sx={{ mb: 2 }}
+        variant="scrollable"
+      >
+        {filters.map((item) => (
+          <Tab key={item.value} value={item.value} label={item.label} />
+        ))}
+      </Tabs>
 
       {isLoading && <CircularProgress />}
       {isError && (
@@ -31,49 +56,13 @@ export default function AlertasPage() {
       )}
 
       <Stack spacing={2}>
-        {alerts?.length === 0 && (
+        {filteredAlerts?.length === 0 && (
           <Typography>
-            Nenhum alerta criado
+            Nenhum alerta {filter === 'todos' ? 'criado' : `com esse status`}
           </Typography>
         )}
-        {alerts?.map((alert) => (
-          <Card key={alert.id}>
-            <CardContent>
-              <Typography>
-                {alert.game.homeTeam} x {alert.game.awayTeam}
-              </Typography>
-              <Typography>
-                Odd alvo: {alert.targetOdd}
-              </Typography>
-              <Typography>
-                Status: {alert.status}
-              </Typography>
-              {alert.status === 'disparado' && alert.triggeredBookmaker && (
-                <Typography>
-                  Disparado em: {alert.triggeredBookmaker.name}
-                </Typography>
-              )}
-              <Typography>
-                Criado em:{' '}{new Date(alert.createdAt).toLocaleString('pt-BR')}
-              </Typography>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => deleteAlert.mutate(alert.id)}
-              >
-                Excluir
-              </Button>
-              {' '}{' '}
-              <Button
-                variant="contained"
-                size="small"
-                onClick={() => triggerAlert.mutate(alert.id)}
-                disabled={alert.status === 'disparado'}
-              >
-                Simular disparo
-              </Button>
-            </CardContent>
-          </Card>
+        {filteredAlerts?.map((alert) => (
+          <AlertCard key={alert.id} alert={alert} />
         ))}
       </Stack>
     </Container>

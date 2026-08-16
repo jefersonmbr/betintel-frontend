@@ -9,6 +9,7 @@ import {
   Snackbar,
   Divider,
   CircularProgress,
+  TextField,
 } from '@mui/material'
 import { useState } from 'react'
 import { Game } from '@/types/game'
@@ -31,6 +32,8 @@ export default function GameDetailsCard({ game }: Props) {
     .slice()
     .sort((a, b) => b.value - a.value)
 
+  const [targetOdd, setTargetOdd] = useState(String(bestOdd?.value ?? 2.0))
+
   const alertsForThisGame = alerts?.filter((alert) => alert.gameId === game.id).length ?? 0
 
   const handleCreateAlert = () => {
@@ -39,7 +42,7 @@ export default function GameDetailsCard({ game }: Props) {
         gameId: game.id,
         market: 'MATCH_RESULT',
         selection: 'HOME',
-        targetOdd: 2.0,
+        targetOdd: Number(targetOdd),
       },
       { onSuccess: () => setOpen(true) }
     )
@@ -110,14 +113,23 @@ export default function GameDetailsCard({ game }: Props) {
           <Typography sx={{ mb: 3 }}>
             Alertas salvos pra esse jogo: {alertsForThisGame}
           </Typography>
-          <Stack spacing={2}>
+          <Stack direction="row" spacing={2}>
+            <TextField
+              label="Odd alvo"
+              type="number"
+              size="small"
+              value={targetOdd}
+              onChange={(event) => setTargetOdd(event.target.value)}
+              slotProps={{ htmlInput: { step: 0.01, min: 1 } }}
+              sx={{ width: 120 }}
+            />
             <Button
               variant="outlined"
               fullWidth
               onClick={handleCreateAlert}
-              disabled={createAlert.isPending}
+              disabled={createAlert.isPending || !targetOdd}
             >
-              {createAlert.isPending ? <CircularProgress size={20} /> : 'Criar alerta (odd alvo: 2.0)'}
+              {createAlert.isPending ? <CircularProgress size={20} /> : 'Criar alerta'}
             </Button>
           </Stack>
         </CardContent>

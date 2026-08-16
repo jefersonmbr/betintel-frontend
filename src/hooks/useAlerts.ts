@@ -46,3 +46,27 @@ export function useTriggerAlert() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alerts'] }),
   })
 }
+
+export function useUpdateAlert() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, targetOdd }: { id: string, targetOdd: number }) => {
+      const { data } = await api.patch<Alert>(`/alerts/${id}`, { targetOdd })
+      return data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alerts'] }),
+  })
+}
+
+export function useCancelAlert() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.patch<Alert>(`/alerts/${id}/cancel`)
+      return data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['alerts'] }),
+  })
+}
