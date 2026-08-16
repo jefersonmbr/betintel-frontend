@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import BottomNav from '@/components/BottomNav'
 import LegalFooter from '@/components/LegalFooter'
 import ThemeRegistry from '@/components/ThemeRegistry'
+import QueryProvider from '@/components/QueryProvider'
 
 export const metadata: Metadata = {
   title: 'BetIntel AI',
@@ -17,11 +18,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        <ThemeRegistry>
-          {children}
-          <LegalFooter />
-          <BottomNav />
-        </ThemeRegistry>
+        <QueryProvider>
+          <ThemeRegistry>
+            {children}
+            <LegalFooter />
+            <BottomNav />
+          </ThemeRegistry>
+        </QueryProvider>
       </body>
     </html>
   );

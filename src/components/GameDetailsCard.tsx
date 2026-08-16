@@ -8,70 +8,41 @@ import {
   Stack,
   Snackbar,
   Divider,
+  CircularProgress,
 } from '@mui/material'
-import { useState, useSyncExternalStore } from 'react'
+import { useState } from 'react'
 import { Game } from '@/types/game'
-import { Alert } from '@/types/alert'
-import { bookmakersMock } from '@/mocks/bookmakers'
 import { getBestOdd } from '@/lib/odds'
+import { apiBaseUrl } from '@/lib/api'
+import { useAlerts, useCreateAlert } from '@/hooks/useAlerts'
 
 type Props = {
   game: Game,
 }
 
-function subscribe(callback: () => void) {
-  window.addEventListener('storage', callback);
-  return () => window.removeEventListener('storage', callback)
-}
-
-function getSnapshot() {
-  const savedAlerts = JSON.parse(
-    localStorage.getItem('alerts') || '[]'
-  )
-
-  return savedAlerts.length;
-}
-
-function getServerSnapshot() {
-  return 0
-}
-
 export default function GameDetailsCard({ game }: Props) {
   const [open, setOpen] = useState(false)
-  const alertsCount = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot
-  )
+  const { data: alerts } = useAlerts()
+  const createAlert = useCreateAlert()
 
   const bestOdd = getBestOdd(game)
   const oddsByBookmaker = game.odds
     .filter((odd) => odd.market === 'MATCH_RESULT' && odd.selection === 'HOME')
-    .map((odd) => ({
-      odd,
-      bookmaker: bookmakersMock.find((item) => item.id === odd.bookmakerId),
-    }))
-    .sort((a, b) => b.odd.value - a.odd.value)
+    .slice()
+    .sort((a, b) => b.value - a.value)
+
+  const alertsForThisGame = alerts?.filter((alert) => alert.gameId === game.id).length ?? 0
 
   const handleCreateAlert = () => {
-    const savedAlerts: Alert[] = JSON.parse(
-      localStorage.getItem('alerts') || '[]'
+    createAlert.mutate(
+      {
+        gameId: game.id,
+        market: 'MATCH_RESULT',
+        selection: 'HOME',
+        targetOdd: 2.0,
+      },
+      { onSuccess: () => setOpen(true) }
     )
-    const newAlert: Alert = {
-      gameId: game.id,
-      market: 'MATCH_RESULT',
-      selection: 'HOME',
-      targetOdd: 2.0,
-      status: 'ativo',
-      createdAt: new Date().toISOString(),
-    }
-    const updatedAlerts = [...savedAlerts, newAlert]
-    localStorage.setItem(
-      'alerts',
-      JSON.stringify(updatedAlerts)
-    )
-    window.dispatchEvent(new Event('storage'))
-    setOpen(true)
   }
 
   return (
@@ -97,7 +68,7 @@ export default function GameDetailsCard({ game }: Props) {
             Odds por casa (Resultado Final — Casa)
           </Typography>
           <Stack spacing={1} sx={{ mb: 3 }}>
-            {oddsByBookmaker.map(({ odd, bookmaker }) => (
+            {oddsByBookmaker.map((odd) => (
               <Stack
                 key={odd.bookmakerId}
                 direction="row"
@@ -106,13 +77,13 @@ export default function GameDetailsCard({ game }: Props) {
                 <Typography
                   sx={{ fontWeight: odd.value === bestOdd?.value ? 700 : 400 }}
                 >
-                  {bookmaker?.name ?? odd.bookmakerId}: {odd.value}
+                  {odd.bookmaker.name}: {odd.value}
                 </Typography>
                 <Button
                   size="small"
                   variant={odd.value === bestOdd?.value ? 'contained' : 'outlined'}
                   component="a"
-                  href={bookmaker?.affiliateUrl ?? '#'}
+                  href={`${apiBaseUrl}/go/${odd.bookmakerId}/${game.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -137,15 +108,16 @@ export default function GameDetailsCard({ game }: Props) {
             Confiança: Alta
           </Typography>
           <Typography sx={{ mb: 3 }}>
-            Alertas salvos: {alertsCount}
+            Alertas salvos pra esse jogo: {alertsForThisGame}
           </Typography>
           <Stack spacing={2}>
             <Button
               variant="outlined"
               fullWidth
               onClick={handleCreateAlert}
+              disabled={createAlert.isPending}
             >
-              Criar alerta (odd alvo: 2.0)
+              {createAlert.isPending ? <CircularProgress size={20} /> : 'Criar alerta (odd alvo: 2.0)'}
             </Button>
           </Stack>
         </CardContent>

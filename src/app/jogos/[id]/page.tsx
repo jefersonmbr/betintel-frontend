@@ -1,20 +1,30 @@
 'use client';
 
-import { Container } from '@mui/material'
+import { Container, CircularProgress, Alert } from '@mui/material'
 import { useParams } from 'next/navigation'
-import { gamesMock } from '@/mocks/games'
+import { useGame } from '@/hooks/useGame'
 import GameDetailsCard from '@/components/GameDetailsCard'
 
 export default function JogoDetalhePage() {
   const params = useParams()
   const id = params.id as string
 
-  const game = gamesMock.find(
-    (item) => item.id === Number(id)
-  )
+  const { data: game, isLoading, isError } = useGame(id)
 
-  if (!game) {
-    return <div>Jogo não encontrado</div>
+  if (isLoading) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4, textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    )
+  }
+
+  if (isError || !game) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4 }}>
+        <Alert severity="error">Jogo não encontrado</Alert>
+      </Container>
+    )
   }
 
   return (

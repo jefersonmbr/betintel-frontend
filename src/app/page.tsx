@@ -1,10 +1,12 @@
 'use client'
 
-import { Container, Typography, Box } from '@mui/material'
+import { Container, Typography, Box, CircularProgress, Alert } from '@mui/material'
 import GameCard from '@/components/GameCard'
-import { gamesMock } from '../mocks/games'
+import { useGames } from '@/hooks/useGames'
 
 export default function Home() {
+  const { data: games, isLoading, isError } = useGames()
+
   return (
     <Container maxWidth="md">
       <Box sx={{ mt: 4 }}>
@@ -12,7 +14,14 @@ export default function Home() {
           Jogos de Hoje
         </Typography>
 
-        {gamesMock.map((game) => (
+        {isLoading && <CircularProgress />}
+        {isError && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            Não foi possível carregar os jogos. Verifique se o backend está rodando.
+          </Alert>
+        )}
+
+        {games?.map((game) => (
           <GameCard key={game.id} game={game} />
         ))}
       </Box>

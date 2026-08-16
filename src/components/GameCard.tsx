@@ -7,8 +7,8 @@ import {
 } from '@mui/material'
 import Link from 'next/link'
 import { Game } from '@/types/game'
-import { bookmakersMock } from '@/mocks/bookmakers'
 import { getBestOdd } from '@/lib/odds'
+import { apiBaseUrl } from '@/lib/api'
 
 type Props = {
   game: Game,
@@ -16,9 +16,6 @@ type Props = {
 
 export default function GameCard({ game }: Props) {
   const bestOdd = getBestOdd(game)
-  const bookmaker = bestOdd
-    ? bookmakersMock.find((item) => item.id === bestOdd.bookmakerId)
-    : null
 
   return (
     <Card sx={{ mb: 2, borderRadius: 3 }}>
@@ -36,7 +33,7 @@ export default function GameCard({ game }: Props) {
         </Typography>
         <Typography variant="body1" sx={{ mb: 2 }}>
           Melhor odd: {bestOdd ? bestOdd.value : '—'}
-          {bookmaker ? ` (${bookmaker.name})` : ''}
+          {bestOdd ? ` (${bestOdd.bookmaker.name})` : ''}
         </Typography>
         <Stack direction="row" spacing={2}>
           <Button
@@ -49,10 +46,10 @@ export default function GameCard({ game }: Props) {
           <Button
             variant="outlined"
             component="a"
-            href={bookmaker?.affiliateUrl ?? '#'}
+            href={bestOdd ? `${apiBaseUrl}/go/${bestOdd.bookmakerId}/${game.id}` : '#'}
             target="_blank"
             rel="noopener noreferrer"
-            disabled={!bookmaker}
+            disabled={!bestOdd}
           >
             Apostar agora
           </Button>

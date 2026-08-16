@@ -1,7 +1,7 @@
 import { Odd } from '@/types/odd'
 
 export type Game = {
-  id: number;
+  id: string;
   homeTeam: string;
   awayTeam: string;
   league: string;
