@@ -15,6 +15,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Game } from '@/types/game'
 import { getBestOdd } from '@/lib/odds'
+import { computeMarketAnalysis } from '@/lib/analysis'
 import { apiBaseUrl } from '@/lib/api'
 import { useAlerts, useCreateAlert } from '@/hooks/useAlerts'
 import { useAuth } from '@/contexts/AuthContext'
@@ -30,6 +31,7 @@ export default function GameDetailsCard({ game }: Props) {
   const createAlert = useCreateAlert()
 
   const bestOdd = getBestOdd(game)
+  const analysis = computeMarketAnalysis(game)
   const oddsByBookmaker = game.odds
     .filter((odd) => odd.market === 'MATCH_RESULT' && odd.selection === 'HOME')
     .slice()
@@ -102,17 +104,26 @@ export default function GameDetailsCard({ game }: Props) {
           <Divider sx={{ mb: 3 }} />
 
           <Typography variant="h6" sx={{ mb: 2 }}>
-            Análise IA
+            Análise de Mercado
           </Typography>
-          <Typography sx={{ mb: 1 }}>
-            Probabilidade: 54%
-          </Typography>
-          <Typography sx={{ mb: 1 }}>
-            Sugestão: Over 1.5 gols
-          </Typography>
-          <Typography sx={{ mb: 3 }}>
-            Confiança: Alta
-          </Typography>
+          {analysis ? (
+            <>
+              <Typography sx={{ mb: 1 }}>
+                Probabilidade implícita (Casa vencer): {analysis.impliedProbability}%
+              </Typography>
+              <Typography sx={{ mb: 1 }}>
+                Confiança do mercado: {analysis.confidence}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 3, display: 'block' }}>
+                Calculado a partir da melhor odd de {analysis.bookmakersCount} casa(s) — inclui a margem da casa,
+                não é previsão de resultado.
+              </Typography>
+            </>
+          ) : (
+            <Typography color="text.secondary" sx={{ mb: 3 }}>
+              Sem odds suficientes pra calcular a análise.
+            </Typography>
+          )}
           {user ? (
             <>
               <Typography sx={{ mb: 3 }}>
