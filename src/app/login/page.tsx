@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Container, Typography, TextField, Button, Stack, Alert } from '@mui/material'
 import { isAxiosError } from 'axios'
 import { useAuth } from '@/contexts/AuthContext'
+import GoogleSignInButton from '@/components/GoogleSignInButton'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -66,6 +67,7 @@ export default function LoginPage() {
           </Typography>
         </Stack>
       </form>
+      <GoogleSignInButton />
     </Container>
   )
 }

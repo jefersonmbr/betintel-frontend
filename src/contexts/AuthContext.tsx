@@ -11,6 +11,7 @@ type AuthContextValue = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -63,6 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     queryClient.setQueryData(['me'], data.user)
   }, [queryClient])
 
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    const { data } = await api.post<{ accessToken: string, user: User }>('/auth/google', {
+      idToken,
+    })
+    setToken(data.accessToken)
+    queryClient.setQueryData(['me'], data.user)
+  }, [queryClient])
+
   const logout = useCallback(() => {
     clearToken()
     queryClient.clear()
@@ -75,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: hasToken && isLoading,
         login,
         register,
+        loginWithGoogle,
         logout,
       }}
     >
