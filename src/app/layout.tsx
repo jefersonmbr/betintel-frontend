@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import AppHeader from '@/components/AppHeader'
 import BottomNav from '@/components/BottomNav'
 import LegalFooter from '@/components/LegalFooter'
 import ThemeRegistry from '@/components/ThemeRegistry'
@@ -40,6 +41,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <ThemeRegistry>
+              <AppHeader />
               {children}
               <LegalFooter />
               <BottomNav />

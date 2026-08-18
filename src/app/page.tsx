@@ -9,8 +9,8 @@ export default function Home() {
 
   return (
     <Container maxWidth="md">
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
+      <Box sx={{ mt: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }} gutterBottom>
           Jogos de Hoje
         </Typography>
 

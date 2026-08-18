@@ -10,6 +10,7 @@ import {
   Divider,
   CircularProgress,
   TextField,
+  Chip,
 } from '@mui/material'
 import { useState } from 'react'
 import Link from 'next/link'
@@ -19,6 +20,7 @@ import { computeMarketAnalysis } from '@/lib/analysis'
 import { apiBaseUrl } from '@/lib/api'
 import { useAlerts, useCreateAlert } from '@/hooks/useAlerts'
 import { useAuth } from '@/contexts/AuthContext'
+import TeamBadge from '@/components/TeamBadge'
 
 type Props = {
   game: Game,
@@ -57,9 +59,13 @@ export default function GameDetailsCard({ game }: Props) {
     <>
       <Card sx={{ borderRadius: 3 }}>
         <CardContent>
-          <Typography variant="h5" gutterBottom>
-            {game.homeTeam} x {game.awayTeam}
-          </Typography>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 1 }}>
+            <TeamBadge teamName={game.homeTeam} size={40} />
+            <Typography variant="h5" sx={{ flexGrow: 1 }}>
+              {game.homeTeam} x {game.awayTeam}
+            </Typography>
+            <TeamBadge teamName={game.awayTeam} size={40} />
+          </Stack>
           <Typography sx={{ mb: 1 }}>
             Liga: {game.league}
           </Typography>
@@ -80,13 +86,19 @@ export default function GameDetailsCard({ game }: Props) {
               <Stack
                 key={odd.bookmakerId}
                 direction="row"
+                spacing={1}
                 sx={{ justifyContent: 'space-between', alignItems: 'center' }}
               >
-                <Typography
-                  sx={{ fontWeight: odd.value === bestOdd?.value ? 700 : 400 }}
-                >
-                  {odd.bookmaker.name}: {odd.value}
-                </Typography>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                  <Typography
+                    sx={{ fontWeight: odd.value === bestOdd?.value ? 700 : 400 }}
+                  >
+                    {odd.bookmaker.name}: {odd.value}
+                  </Typography>
+                  {odd.value === bestOdd?.value && (
+                    <Chip color="success" size="small" label="Melhor" />
+                  )}
+                </Stack>
                 <Button
                   size="small"
                   variant={odd.value === bestOdd?.value ? 'contained' : 'outlined'}

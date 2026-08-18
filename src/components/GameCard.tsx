@@ -4,11 +4,13 @@ import {
   Typography,
   Button,
   Stack,
+  Chip,
 } from '@mui/material'
 import Link from 'next/link'
 import { Game } from '@/types/game'
 import { getBestOdd } from '@/lib/odds'
 import { apiBaseUrl } from '@/lib/api'
+import TeamBadge from '@/components/TeamBadge'
 
 type Props = {
   game: Game,
@@ -18,12 +20,16 @@ export default function GameCard({ game }: Props) {
   const bestOdd = getBestOdd(game)
 
   return (
-    <Card sx={{ mb: 2, borderRadius: 3 }}>
+    <Card sx={{ mb: 2, borderRadius: 3 }} elevation={1}>
       <CardContent>
-        <Typography variant="h6">
-          {game.homeTeam} x {game.awayTeam}
-        </Typography>
-        <Typography variant="body2" sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
+          <TeamBadge teamName={game.homeTeam} />
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            {game.homeTeam} x {game.awayTeam}
+          </Typography>
+          <TeamBadge teamName={game.awayTeam} />
+        </Stack>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Horário: {new Date(game.startTime).toLocaleString('pt-BR', {
             day: '2-digit',
             month: '2-digit',
@@ -31,10 +37,18 @@ export default function GameCard({ game }: Props) {
             minute: '2-digit',
           })}
         </Typography>
-        <Typography variant="body1" sx={{ mb: 2 }}>
-          Melhor odd: {bestOdd ? bestOdd.value : '—'}
-          {bestOdd ? ` (${bestOdd.bookmaker.name})` : ''}
-        </Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>
+          <Chip
+            color="success"
+            size="small"
+            label={bestOdd ? `Melhor odd: ${bestOdd.value}` : 'Sem odds'}
+          />
+          {bestOdd && (
+            <Typography variant="body2" color="text.secondary">
+              {bestOdd.bookmaker.name}
+            </Typography>
+          )}
+        </Stack>
         <Stack direction="row" spacing={2}>
           <Button
             variant="contained"
